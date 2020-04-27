@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    - nginx_deployment_users_home: /root
+    - nginx_testing_provider: lxd
+
+  roles:
+    - nginx

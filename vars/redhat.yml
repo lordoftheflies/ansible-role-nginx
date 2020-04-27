@@ -1,0 +1,4 @@
+---
+# roles/nginx/vars/debian.yml
+
+nginx_package_extension: 'rpm'
