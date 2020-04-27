@@ -28,6 +28,33 @@
   loop_control:
     loop_var: specific_tasks
 
-
-
 # Role tasks
+
+- name: "Remove default nginx vhost config file (if configured)."
+  file:
+    path: "{{ nginx_default_vhost_path }}"
+    state: absent
+  when: nginx_remove_default_vhost | bool
+  notify: restart nginx
+
+- name: "Ensure nginx_vhost_path exists."
+  file:
+    path: "{{ nginx_vhost_path }}"
+    state: directory
+  notify: reload nginx
+
+- name: "Copy nginx configuration in place."
+  template:
+    src: "{{ nginx_conf_template }}"
+    dest: "{{ nginx_conf_file_path }}"
+    owner: root
+    group: "{{ root_group }}"
+    mode: 0644
+  notify:
+    - reload nginx
+
+- name: "Ensure nginx service is running as configured."
+  service:
+    name: nginx
+    state: "{{ nginx_service_state }}"
+    enabled: "{{ nginx_service_enabled }}"

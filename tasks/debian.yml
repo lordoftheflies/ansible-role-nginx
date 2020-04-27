@@ -1,6 +1,7 @@
 ---
-# roles/nginx/tasks/debian.yml
 
-- debug:
-    msg:
-      - "FILE: roles/{{ role_name }}/tasks/debian.yml not in use at this time"
+- name: "Ensure nginx is installed."
+  apt:
+    name: "{{ nginx_package_name }}"
+    state: present
+    default_release: "{{ nginx_default_release }}"

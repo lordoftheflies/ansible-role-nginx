@@ -1,237 +1,90 @@
 ---
-# roles/nginx/defaults/main.yml
+# Used only for Debian/Ubuntu installation, as the -t option for apt.
+nginx_default_release: ""
 
-nginx_debug: false
+# Used only for Redhat installation, enables source Nginx repo.
+nginx_yum_repo_enabled: true
 
-nginx_controller_user: '{{ project_controller_user }}'
-nginx_controller_home: '{{ project_controller_home }}'
-nginx_controller_resources_root: '{{ project_controller_resources_home }}'
+# Use the official Nginx PPA for Ubuntu, and the version to use if so.
+nginx_ppa_use: false
+nginx_ppa_version: stable
 
-nginx_deployment_user: '{{ project_deployment_user }}'
-nginx_deployment_home: '{{ project_deployment_home }}'
-nginx_deployment_resources_root: '{{ project_deployment_resources_home }}'
+# The name of the nginx package to install.
+nginx_package_name: "nginx"
 
-## atomic versioning example
+nginx_service_state: started
+nginx_service_enabled: true
+
+nginx_conf_template: "nginx.conf.j2"
+nginx_vhost_template: "vhost.j2"
+
+nginx_worker_processes: >-
+  "{{ ansible_processor_vcpus | default(ansible_processor_count) }}"
+nginx_worker_connections: "1024"
+nginx_multi_accept: "off"
+
+nginx_error_log: "/var/log/nginx/error.log warn"
+nginx_access_log: "/var/log/nginx/access.log main buffer=16k flush=2m"
+
+nginx_sendfile: "on"
+nginx_tcp_nopush: "on"
+nginx_tcp_nodelay: "on"
+
+nginx_keepalive_timeout: "65"
+nginx_keepalive_requests: "100"
+
+nginx_server_tokens: "on"
+
+nginx_client_max_body_size: "64m"
+
+nginx_server_names_hash_bucket_size: "64"
+
+nginx_proxy_cache_path: ""
+
+nginx_extra_conf_options: ""
+# Example extra main options, used within the main nginx's context:
+#   nginx_extra_conf_options: |
+#     env VARIABLE;
+#     include /etc/nginx/main.d/*.conf;
+
+nginx_extra_http_options: ""
+# Example extra http options, printed inside the main server http config:
+#    nginx_extra_http_options: |
+#      proxy_buffering    off;
+#      proxy_set_header   X-Real-IP $remote_addr;
+#      proxy_set_header   X-Scheme $scheme;
+#      proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+#      proxy_set_header   Host $http_host;
+
+nginx_remove_default_vhost: false
+nginx_vhosts: []
+# Example vhost below, showing all available options:
+# - listen: "80" # default: "80"
+#   server_name: "example.com" # default: N/A
+#   root: "/var/www/example.com" # default: N/A
+#   index: "index.html index.htm" # default: "index.html index.htm"
+#   filename: "example.com.conf" # Can be used to set the vhost filename.
 #
-# nginx_major: '0'
-# nginx_moderate_revision: '0'
-# nginx_minor_revision: '1'
-# nginx_build: ''
+#   # Properties that are only added if defined:
+#   server_name_redirect: "www.example.com" # default: N/A
+#   error_page: ""
+#   access_log: ""
+#   error_log: ""
+#   extra_parameters: "" # Can be used to add extra config blocks (multiline).
+#   template: "" # Can be used to override the `nginx_vhost_template` per host.
+#   state: "absent" # To remove the vhost configuration.
 
-## Package #
+nginx_upstreams: []
+# - name: myapp1
+#   strategy: "ip_hash" # "least_conn", etc.
+#   keepalive: 16 # optional
+#   servers: {
+#     "srv1.example.com",
+#     "srv2.example.com weight=3",
+#     "srv3.example.com"
+#   }
 
-nginx_package_state: 'present'
-nginx_package_version: '2.0.1'
-nginx_package_filename: "vagrant_{{ nginx_package_version }}_i686.deb"
-
-nginx_controller_resources_dir: '{{ nginx_controller_resources_root }}/sw/vagrant/debs'
-nginx_deployment_resources_dir: '{{ nginx_deployment_resources_root }}/vagrant/debs'
-
-# /tests/sw/{{ ansible_distribution| lower }}/{{ ansible_distribution_version }}/miniconda'
-
-# Help file
-
-nginx_acemenu_help_file_template_path: '{{ fact_role_path }}/templates/bin/acemenu/help/example_aceadmin_helpfile.md.j2'
-
-# Resources
-
-nginx_package_url: "https://releases.hashicorp.com/vagrant/2.0.1/vagrant_2.0.1_i686.deb"
-# nginx_checksum_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS"
-# nginx_checksum_sig_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS.sig"
-
-## links
-
-nginx_default_link_force: true
-
-########################################
-
-# Resources
-
-nginx_resources_on_local:
-
-  nginx_local_directories:
-
-    state: 'directory'
-    path: '{{ nginx_controller_resources_dir }}'
-    owner: '{{ nginx_controller_user }}'
-    group: '{{ nginx_controller_user }}'
-    mode: '0755'
-
-  nginx_local_clones:
-
-    become: ''
-    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
-    dest: '{{ nginx_controller_resources_dir }}/acemenu'
-    mode: '0700'
-    clone: true
-
-  nginx_local_downloads:
-
-    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
-    dest: '{{ nginx_controller_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
-    owner: '{{ nginx_controller_user }}'
-    group: '{{ nginx_controller_user }}'
-    mode: '0700'
-    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
-    resource_type: 'url'
-
-  nginx_local_file_copies:
-
-    state: "copy"
-    src: './files/example_playbook.yml'
-    dest: '{{ nginx_controller_resources_dir }}/copy_test.yml'
-    owner: '{{ nginx_controller_user }}'
-    group: '{{ nginx_controller_user }}'
-    mode: '0700'
-
-  nginx_local_file_touches:
-
-    state: 'touch'
-    path: '{{ nginx_controller_resources_dir }}/copy_test.yml'
-    owner: '{{ nginx_controller_user }}'
-    group: '{{ nginx_controller_user }}'
-    mode: '0770'
-
-  nginx_local_templated_files:
-
-
-    state: 'template'
-    src: './templates/template_test.md.j2'
-    dest: '{{ nginx_controller_resources_dir }}/test.md'
-    owner: '{{ nginx_controller_user }}'
-    group: '{{ nginx_controller_user }}'
-    mode: '0700'
-
-  nginx_local_blocksinfile:
-
-    type: 'blockinfile'
-    path: '{{ nginx_controller_resources_dir }}/test.md'
-    owner: '{{ nginx_controller_user }}'
-    group: '{{ nginx_controller_user }}'
-    mode: '0700'
-    insertafter: "EOF"
-    block: |
-      # if running bash
-      if [ -n "$BASH_VERSION" ]; then
-          # include /opt/display/bin/display if it exists
-          if [ -f "/opt/display/bin/display" ]; then
-              PATH="/opt/display/bin:$PATH"
-
-       	. "/opt/display/bin/"
-          fi
-      fi
-    state: "present"
-
-  nginx_local_standard_sym_links:
-
-    state: "link"
-    src: '{{ nginx_controller_resources_dir }}/test.md'
-    dest: '{{ nginx_controller_resources_dir }}/my_local_link'
-    owner: '{{ nginx_controller_user }}'
-    group: '{{ nginx_controller_user }}'
-    mode: '0700'
-    force: '{{ nginx_default_link_force }}'
-
-  nginx_local_relative_sym_links:
-
-    link_name: 'relative_link'
-    link_target: 'test.md'
-    link_dir: '{{ nginx_controller_resources_dir }}'
-    state: 'relative_link'
-#    owner: '{{ nginx_controller_user }}'
-#    group: '{{ nginx_controller_user }}'
-#    mode: '0700'
-
-nginx_resources_on_remote:
-
-  nginx_remote_directories:
-
-    state: 'directory'
-    path: '{{ nginx_deployment_resources_dir }}'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0755'
-
-  nginx_remote_clones:
-
-    become: true
-    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
-    dest: '{{ nginx_deployment_resources_dir }}/acemenu'
-    mode: '0700'
-    clone: true
-
-  nginx_remote_downloads:
-
-    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
-    dest: '{{ nginx_deployment_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0700'
-    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
-    resource_type: 'url'
-
-  nginx_remote_file_copies:
-
-    state: "copy"
-    src: './files/example_playbook.yml'
-    dest: '{{ nginx_deployment_resources_dir }}/copy_test.yml'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0700'
-
-  nginx_remote_file_touches:
-
-    state: 'touch'
-    path: '{{ nginx_deployment_resources_dir }}/copy_test.yml'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0770'
-
-  nginx_remote_templates_files:
-
-    state: 'template'
-    src: './templates/template_test.md.j2'
-    dest: '{{ nginx_deployment_resources_dir }}/test.md'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0700'
-
-  nginx_remote_blocksinfile:
-
-    type: 'blockinfile'
-    path: '{{ nginx_deployment_resources_dir }}/test.md'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0700'
-    insertafter: "EOF"
-    block: |
-      # if running bash
-      if [ -n "$BASH_VERSION" ]; then
-          # include /opt/display/bin/display if it exists
-          if [ -f "/opt/display/bin/display" ]; then
-              PATH="/opt/display/bin:$PATH"
-
-       	. "/opt/display/bin/"
-          fi
-      fi
-    state: "present"
-
-  nginx_remote_standard_sym_links:
-
-    state: 'link'
-    src: '{{ nginx_deployment_resources_dir }}/test.md'
-    dest: '{{ nginx_deployment_resources_dir }}/my_remote_link'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0700'
-    force: '{{ nginx_default_link_force }}'
-
-  nginx_remote_relative_sym_links:
-
-    state: 'relative_link'
-    link_dir: '{{ nginx_deployment_resources_dir }}'
-    link_name: 'my_relative_link'
-    link_target: 'test.md'
-    owner: '{{ nginx_deployment_user }}'
-    group: '{{ nginx_deployment_user }}'
-    mode: '0700'
+nginx_log_format: |-
+  '$remote_addr - $remote_user [$time_local] "$request" '
+  '$status $body_bytes_sent "$http_referer" '
+  '"$http_user_agent" "$http_x_forwarded_for"'
