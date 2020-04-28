@@ -13,6 +13,8 @@ description: 'Ansible Role for maintain NginX webserver.'
 
 ![GitHub Release Date](https://img.shields.io/github/release-date/lordoftheflies/ansible-role-nginx)
 
+[![time tracker](https://wakatime.com/badge/github/lordoftheflies/ansible-role-nginx.svg)](https://wakatime.com/badge/github/lordoftheflies/ansible-role-nginx)
+
 ## Description
 
 Nginx is an Ansible Role used to setup and maintain production grade NginX webserver.
