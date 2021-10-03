@@ -3,19 +3,36 @@ dependency:
   name: galaxy
 driver:
   name: docker
+platforms:
+  - name: static-hosting-instance
+    image: 'registry.gitlab.com/cherubits/automation/images/docker-ubuntu2004-ansible:latest'
+    privileged: true
+    pre_build_image: false
+    groups:
+      - load_balancers
+    source:
+      alias: 'ubuntu/2004/amd64'
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    
 lint: |
   set -e
   yamllint .
   ansible-lint
-platforms:
-  - name: instance
-    image: "lordoftheflies/docker-${MOLECULE_DISTRO:-ubuntu1804}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    privileged: true
-    pre_build_image: true
+  flake8
+  
 provisioner:
   name: ansible
-  playbooks:
-    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+  config_options:
+    defaults:
+      remote_user: root
+      become_user: root
+      no_log: false
+      callback_whitelist: junit, profile_tasks, timer, yaml
+      interpreter_python: auto_silent
+    ssh_connection:
+      pipelining: false
+  inventory:
+    load_balancers: [] 
+verifier:
+  name: ansible

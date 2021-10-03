@@ -1,30 +1,30 @@
----
-# roles/nginx/meta/main.yml
-
-dependencies: []
 galaxy_info:
   role_name: 'ansible_role_nginx'
-  version: '2.3.0'
+  version: '3.0.0'
   author: 'lordoftheflies'
-  description: 'Ansible Galaxy role for maintain Nginx.'
+  description: 'Ansible Role for managing Nginx webserver.'
   company: 'Cherubits'
-  license: Apache-2.0
+  license: MIT
   min_ansible_version: '2.9'
   platforms:
     - name: Ubuntu
       versions:
         - xenial
         - bionic
+        - fossa
     - name: Debian
       versions:
         - jessie
         - stretch
+        - buster
+        - bullseye
     - name: Centos
       versions:
         - 7
   galaxy_tags:
     - cherubits
     - nginx
-    - debian
-    - ubuntu
-    - centos
+
+dependencies: []
+  # List your role dependencies here, one per line. Be sure to remove the '[]' above,
+  # if you add dependencies to this list.

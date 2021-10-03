@@ -1,0 +1,13 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: yes
+  tasks:
+  - name: Initialize role without actually running it
+    include_role:
+      name: ansible-role-nginx
+      tasks_from: init
+
+  # Start testing: can use role library now

@@ -1,48 +1,40 @@
 ---
+# Based on ansible-lint config
 extends: default
-skip_list:
-  - '301'
+
+ignore: |
+  .tox/
+  .venv/
+  .github/
+  .gitlab/
 rules:
   braces:
     max-spaces-inside: 1
-    level: error
+    level: warning
   brackets:
     max-spaces-inside: 1
-    level: error
+    level: warning
   colons:
     max-spaces-after: -1
-    level: error
+    level: warning
   commas:
     max-spaces-after: -1
-    level: error
+    level: warning
   comments: disable
   comments-indentation: disable
   document-start: disable
   empty-lines:
     max: 3
-    level: error
+    level: warning
   hyphens:
     level: error
   indentation: disable
   key-duplicates: enable
+  line-length: disable
   new-line-at-end-of-file: disable
   new-lines:
     type: unix
   trailing-spaces: disable
-  truthy: disable
-  line-length:
-    max: 160
-    level: warning
-ignore: |
-  env
-  build
-  files
-  .github
-  .gitlab
-  .vagrant
-  .ansible-lint
-  .env
-  .venv
-  .ansible
-  .ansible-galaxy
-  _config.yml
+  truthy:
+    allowed-values: ["yes", "no", "true", "false", "True", "False"]
+    level: error

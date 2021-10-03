@@ -3,6 +3,9 @@
 
 # Boilerplate tasks
 
+- name: Play Nginx Role
+  debug:
+    msg: Let's play Ansible Role Nginx {{ ansible_distribution }} - {{ ansible_distribution_version }}!
 
 - name: "Include version-specific variables for OS."
   include_vars: "{{ specific_variables }}"
@@ -54,6 +57,7 @@
     - reload nginx
 
 - name: "Ensure nginx service is running as configured."
+  become: true
   service:
     name: nginx
     state: "{{ nginx_service_state }}"

@@ -1,0 +1,10 @@
+---
+
+# This uses a variable as this changes per distribution.
+
+- name: "Ensure nginx is installed."
+  become: true
+  package:
+    name: "{{ nginx_package_name }}"
+    state: present
+    use: apt
