@@ -6,5 +6,5 @@
   become: true
   package:
     name: "{{ nginx_package_name }}"
-    state: present
+    state: "{{ state | default('present') }}"
     use: apt

@@ -1,6 +1,7 @@
 ---
 
 - name: "Enable nginx repo."
+  become: true
   template:
     src: nginx.repo.j2
     dest: /etc/yum.repos.d/nginx.repo
@@ -10,6 +11,7 @@
   when: nginx_yum_repo_enabled | bool
 
 - name: "Ensure nginx is installed."
+  become: true
   package:
     name: "{{ nginx_package_name }}"
-    state: present
+    state: "{{ state | default('present') }}"

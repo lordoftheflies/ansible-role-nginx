@@ -1,7 +1,9 @@
 ---
 
 - name: "Ensure nginx is installed."
-  apt:
+  become: true
+  package:
     name: "{{ nginx_package_name }}"
-    state: present
-    default_release: "{{ nginx_default_release }}"
+    state: "{{ nginx_state | default('present') }}"
+    use: apt
+  tags: [install, debian]

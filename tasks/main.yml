@@ -3,9 +3,9 @@
 
 # Boilerplate tasks
 
-- name: Play Nginx Role
-  debug:
-    msg: Let's play Ansible Role Nginx {{ ansible_distribution }} - {{ ansible_distribution_version }}!
+# - name: Play Nginx Role
+#   debug:
+#     msg: Let's play Ansible Role Nginx {{ ansible_distribution }} - {{ ansible_distribution_version }}!
 
 - name: "Include version-specific variables for OS."
   include_vars: "{{ specific_variables }}"
@@ -31,25 +31,50 @@
   loop_control:
     loop_var: specific_tasks
 
-# Role tasks
+# # Role tasks
 
 - name: "Remove default nginx vhost config file (if configured)."
+  become: true
   file:
     path: "{{ nginx_default_vhost_path }}"
     state: absent
   when: nginx_remove_default_vhost | bool
   notify: restart nginx
 
-- name: "Ensure nginx_vhost_path exists."
+- name: "Ensure Nginx available virtualhost directory exists."
+  become: true
   file:
-    path: "{{ nginx_vhost_path }}"
+    path: "{{ nginx_available_vhost_path }}"
+    owner: root
+    group: "{{ root_group }}"
+    state: directory
+  notify: reload nginx
+
+- name: "Ensure Nginx enabled virtualhost directory exists."
+  become: true
+  file:
+    path: "{{ nginx_enabled_vhost_path }}"
+    owner: root
+    group: "{{ root_group }}"
     state: directory
   notify: reload nginx
 
 - name: "Copy nginx configuration in place."
+  become: true
   template:
     src: "{{ nginx_conf_template }}"
     dest: "{{ nginx_conf_file_path }}"
+    owner: root
+    group: "{{ root_group }}"
+    mode: 0644
+  notify:
+    - reload nginx
+
+- name: "Setup webserver home page."
+  become: true
+  template:
+    src: "{{ nginx_home_page_template }}"
+    dest: "{{ nginx_home_path }}"
     owner: root
     group: "{{ root_group }}"
     mode: 0644
